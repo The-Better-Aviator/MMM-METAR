@@ -2,6 +2,8 @@
 
 A module for the [MagicMirror](https://github.com/MichMich/MagicMirror) project to fetch and display METAR data.
 
+![Example Image](./example.png)
+
 ## Installation
 
 ```bash
@@ -19,7 +21,7 @@ Add the following to your `/config/config.js` file:
       position: 'bottom_bar',
       header: 'Aviation Weather',
       config: {
-        airports: ['KFDK','KJYO','KIAD'],
+        airports: ['KFDK','KJYO','KIAD','KDCA','KBWI'],
         useColor: false,
       },
     },

@@ -9,7 +9,7 @@ Module.register('MMM-METAR', {
   start: function () {
     setInterval(() => {
       this.updateDom(1000);
-    }, 1000);
+    }, 15000);
   },
   // This function renders your content on MM screen
   getDom: function () {

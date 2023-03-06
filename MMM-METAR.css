@@ -1,0 +1,31 @@
+.metar table {
+  border-collapse: collapse;
+}
+.metar tr {
+  border: solid #333333;
+  border-width: 1px 0;
+}
+.metar tr:first-child {
+  border-top: none;
+}
+.metar tr:last-child {
+  border-bottom: none;
+}
+.metar td {
+  padding: 5px;
+}
+.conditions {
+  color: #404040;
+}
+.lifr {
+  color: #bf60bf;
+}
+.ifr {
+  color: #bf6060;
+}
+.mvfr {
+  color: #6060bf;
+}
+.vfr {
+  color: #60bf60;
+}

@@ -1,16 +1,15 @@
 {
   "name": "mmm-metar",
   "version": "1.0.0",
-  "description": "Add the following to your `/config/config.js` file:",
+  "description": "A module for the MagicMirror project to fetch and display METAR data.",
   "main": "MMM-METAR.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "The Better Aviator",
+  "license": "MIT",
   "dependencies": {
-    "jsonpath": "^1.1.1",
     "node-fetch": "^3.3.0"
   }
 }

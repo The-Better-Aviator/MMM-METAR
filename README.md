@@ -8,7 +8,7 @@ A module for the [MagicMirror](https://github.com/MichMich/MagicMirror) project 
 
 ```bash
 cd ~/MagicMirror/modules
-git clone https://github.com/BetterAviator/MMM-METAR
+git clone https://github.com/The-Better-Aviator/MMM-METAR
 cd MMM-METAR
 npm install
 ```

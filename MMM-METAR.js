@@ -8,9 +8,9 @@ Module.register('MMM-METAR', {
   },
   // This function will be executed when your module loads successfully
   start: function () {
-    setInterval(() => {
-      this.updateDom(1000);
-    }, 15000);
+    if (this.config.useSort === 'alpha') {
+      this.config.airports.sort((a, b) => a.localeCompare(b));
+    }
   },
   // This function renders your content on MM screen
   getDom: function () {
@@ -18,31 +18,15 @@ Module.register('MMM-METAR', {
     metarContent.classList.add('metar');
     let metarTable = document.createElement('table');
     if (this.config.airports.length > 0) {
-      if (this.config.metarData !== null) {
-        let metarData = this.sortObject(
-          this.config.metarData,
-          this.config.useSort
-        );
-        metarData.forEach((airport) => {
-          let metarTableRow = document.createElement('tr');
-          let metarString = airport.rawOb.replace(`${airport.icaoId} `, '');
-          let conditions = this.checkConditions(airport);
-          let conditionsStyle = this.config.useColor
-            ? conditions.toLowerCase()
-            : 'conditions';
-          metarTableRow.innerHTML = `<td style="text-align:left">${airport.icaoId}</td><td class="${conditionsStyle}" style="text-align:left">${conditions}</td><td style="text-align:left">${metarString}</td>`;
-          metarTable.appendChild(metarTableRow);
-        });
-      } else {
-        this.config.airports.forEach((airport) => {
-          let metarTableRow = document.createElement('tr');
-          metarTableRow.innerHTML = `<td style="text-align:left">${airport}</td><td></td><td style="text-align:left">Fetching...</td>`;
-          metarTable.appendChild(metarTableRow);
-        });
-      }
+      // Build Table
+      this.config.airports.forEach((airport) => {
+        let metarTableRow = document.createElement('tr');
+        metarTableRow.innerHTML = `<td id="${airport}" style="text-align:left">${airport}</td><td id="${airport}COND" class="dimmed" style="text-align:left">...</td><td id="${airport}METAR" class="dimmed" style="text-align:left">Fetching...</td>`;
+        metarTable.appendChild(metarTableRow);
+      });
     } else {
       metarTable.innerHTML =
-        '<tr><em>Please add airports to config.js</em></tr>';
+        '<tr class="bright"><em>Please add airports to config.js</em></tr>';
     }
     metarContent.appendChild(metarTable);
     return metarContent;
@@ -66,30 +50,70 @@ Module.register('MMM-METAR', {
   socketNotificationReceived: function (notification, payload) {
     switch (notification) {
       case 'MMM_METAR_RECEIVED':
-        this.config.metarData = payload;
+        this.updateData(payload);
         break;
       case 'MMM_ERROR_RECEIVED':
         break;
     }
   },
-  sortObject(objectToSort, sortType) {
-    result = {};
-    switch (sortType) {
-      case 'array':
-        result = objectToSort.sort(
-          (a, b) =>
-            this.config.airports.indexOf(a.icaoId) -
-            this.config.airports.indexOf(b.icaoId)
-        );
-        break;
-      case 'alpha':
-        result = objectToSort.sort((a, b) => a.icaoId.localeCompare(b.icaoId));
-        break;
-    }
-    return result;
-  },
   fetchData() {
     this.sendSocketNotification('MMM_FETCH_DATA', this.config.airports);
+  },
+  updateData(payload) {
+    let lastFetch = payload;
+    if (this.config.metarData === null) {
+      this.config.metarData = lastFetch;
+    }
+    this.config.airports.forEach((airport) => {
+      let airportElement = document.getElementById(airport);
+      let conditionsElement = document.getElementById(`${airport}COND`);
+      let metarElement = document.getElementById(`${airport}METAR`);
+      // Find object that matches airport
+      let metarAirport = lastFetch.find((obj) => obj.icaoId === airport);
+      if (metarAirport !== undefined) {
+        // Update the table data
+        airportElement.classList.remove('dimmed');
+        conditionsElement.classList.remove('dimmed');
+        metarElement.classList.remove('light');
+        let conditions = this.checkConditions(metarAirport);
+        let conditionsClass = this.config.useColor
+          ? conditions.toLowerCase()
+          : 'dimmed';
+        conditionsElement.classList.add(conditionsClass);
+        conditionsElement.innerHTML = conditions;
+        let metarString = metarAirport.rawOb.replace(`${airport.icaoId} `, '');
+        metarElement.innerHTML = metarString;
+        // Update the metarData object
+        let metarDataIndex = this.config.metarData.findIndex(
+          (obj) => obj.icaoId === airport
+        );
+        if (metarDataIndex != -1) {
+          this.config.metarData[metarDataIndex] = metarAirport;
+        } else {
+          this.config.metarData.push(metarAirport);
+        }
+      } else {
+        let metarAirport = this.config.metarData.find(
+          (obj) => obj.icaoId === airport
+        );
+        if (metarAirport !== undefined) {
+          let expired = this.checkExpired(metarAirport.reportTime);
+          if (expired) {
+            airportElement.classList.add('dimmed');
+            conditionsElement.classList.add('dimmed');
+            metarElement.classList.add('light');
+          }
+        }
+      }
+    });
+  },
+  checkExpired(dateTimeString) {
+    const dateToCheck = new Date(dateTimeString);
+    const oneHour = 60 * 60 * 1000;
+    if (Date.now() - dateToCheck > oneHour) {
+      return true;
+    }
+    return false;
   },
   checkConditions(metarObject) {
     let result = '';
@@ -152,7 +176,7 @@ Module.register('MMM-METAR', {
     let result = 0;
     let coverages = [cldCvg1, cldCvg2, cldCvg3, cldCvg4];
     let ceilingIndex = coverages.findIndex(
-      (coverage) => coverage == 'BKN' || coverage == 'OVC'
+      (coverage) => coverage === 'BKN' || coverage === 'OVC'
     );
     let bases = [cldBas1, cldBas2, cldBas3, cldBas4];
     if (ceilingIndex != -1) {

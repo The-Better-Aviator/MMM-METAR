@@ -3,6 +3,7 @@ Module.register('MMM-METAR', {
   defaults: {
     airports: [],
     useColor: false,
+    useSort: 'array',
     metarData: null,
   },
   // This function will be executed when your module loads successfully
@@ -18,7 +19,8 @@ Module.register('MMM-METAR', {
     let metarTable = document.createElement('table');
     if (this.config.airports.length > 0) {
       if (this.config.metarData !== null) {
-        this.config.metarData.forEach((airport) => {
+        let metarData = arrayToSort(this.config.metarData, this.config.useSort);
+        metarData.forEach((airport) => {
           let metarTableRow = document.createElement('tr');
           let metarString = airport.rawOb.replace(`${airport.icaoId} `, '');
           let conditions = this.checkConditions(airport);
@@ -66,6 +68,22 @@ Module.register('MMM-METAR', {
       case 'MMM_ERROR_RECEIVED':
         break;
     }
+  },
+  sortObject(objectToSort, sortType) {
+    result = {};
+    switch (sortType) {
+      case 'array':
+        result = objectToSort.sort(
+          (a, b) =>
+            this.config.airports.indexOf(a.icaoId) -
+            this.config.airports.indexOf(b.icaoId)
+        );
+        break;
+      case 'alpha':
+        result = objectToSort.sort((a, b) => a.icaoId.localeCompare(b.icaoId));
+        break;
+    }
+    return result;
   },
   fetchData() {
     this.sendSocketNotification('MMM_FETCH_DATA', this.config.airports);

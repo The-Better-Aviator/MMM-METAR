@@ -19,7 +19,10 @@ Module.register('MMM-METAR', {
     let metarTable = document.createElement('table');
     if (this.config.airports.length > 0) {
       if (this.config.metarData !== null) {
-        let metarData = arrayToSort(this.config.metarData, this.config.useSort);
+        let metarData = this.sortObject(
+          this.config.metarData,
+          this.config.useSort
+        );
         metarData.forEach((airport) => {
           let metarTableRow = document.createElement('tr');
           let metarString = airport.rawOb.replace(`${airport.icaoId} `, '');

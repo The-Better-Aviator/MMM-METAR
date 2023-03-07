@@ -1,5 +1,5 @@
 const NodeHelper = require('node_helper');
-const fetch = require('node-fetch');
+const axios = require('axios');
 
 module.exports = NodeHelper.create({
   // This function will be executed when this loads and connects to module
@@ -18,9 +18,9 @@ module.exports = NodeHelper.create({
   },
   apiCall: function (url, callback, method = null, headers = null) {
     var options = { method: method, headers: headers };
-    fetch(url, options)
-      .then((res) => res.json())
-      .then((json) => callback(json))
+    axios
+      .get(url, options)
+      .then((res) => callback(res.data))
       .catch((err) => console.log(err));
   },
   getData: function (airports) {

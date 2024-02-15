@@ -24,7 +24,7 @@ module.exports = NodeHelper.create({
       .catch((err) => console.log(err));
   },
   getData: function (airports) {
-    var url = `https://beta.aviationweather.gov/cgi-bin/data/metar.php?ids=${airports}&format=json`;
+    var url = `https://aviationweather.gov/cgi-bin/data/metar.php?ids=${airports}&format=json`;
     this.apiCall(url, (res) => {
       this.sendSocketNotification('MMM_METAR_RECEIVED', res);
     });
